@@ -103,50 +103,106 @@ if (!COL) {
 
     COL.displayPatientInfo = (patient) => {
         let pid = patient.id;
-        let tableContent = "<tr> <table><body><tr><td colspan='2' class='medtd'>" + COL.getPatientName(patient) + "</td></tr>";
+        let tableContent = "<tr> <table><body><tr><td colspan='2' class='medtd'><h3>" + COL.getPatientName(patient) + "</h3></td></tr>";
         Promise.all([
             COL.client.api.fetchAll({type: "Procedure", query: {patient: pid}}),
-            COL.client.api.fetchAll({type: "Observation", query: {patient: pid}}),
             COL.client.api.fetchAll({type: "DiagnosticReport", query: { patient: pid}}),
             COL.client.api.fetchAll({ type: "Encounter", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "Immunization", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "CarePlan", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "MedicationRequest", query: {patient: pid}}),
-            COL.client.api.fetchAll({ type: "Condition", query: {patient: pid}})
+            COL.client.api.fetchAll({ type: "Condition", query: {patient: pid}}),
+            COL.client.api.fetchAll({type: "Observation", query: {patient: pid}})
         ]).then((res) => {
             let procedures = res[0],
-                observations = res[1],
-                diagnosticReports = res[2],
-                encounters = res[3],
-                immunizations = res[4],
-                carePlans  = res[5],
-                medRequests = res[6],
-                conditions = res[7];
+                diagnosticReports = res[1],
+                encounters = res[2],
+                immunizations = res[3],
+                carePlans  = res[4],
+                medRequests = res[5],
+                conditions = res[6],
+                observations = res[7];
+
             if (procedures.length) {
                 tableContent += "<tr> <td class='medtd'> Procedure </td><td>" + procedures.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                procedures.forEach((procedure) => {
+                    tableContent += "<tr><td class='medtd'>" + procedure.id + "</td><td class='medtd'>" +
+                        JSON.stringify(procedure) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
             }else{tableContent += "<tr> <td class='medtd'> Procedure </td><td> 0 </td></tr>"}
+
+            if (diagnosticReports.length) {
+                tableContent += "<tr> <td class='medtd'> Diagnostic Report </td><td>" + diagnosticReports.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                diagnosticReports.forEach((diagnosticReport) => {
+                    tableContent += "<tr><td class='medtd'>" + diagnosticReport.id +
+                        "</td><td class='medtd'>" + JSON.stringify(diagnosticReport) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
+             }else{tableContent += "<tr> <td class='medtd'> Diagnostic Report </td><td> 0 </td></tr>";}
+
+            if (encounters.length) {
+                tableContent += "<tr> <td class='medtd'> Encounter </td><td>" + encounters.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                encounters.forEach((encounter) => {
+                    tableContent += "<tr><td class='medtd'>" + encounter.id +
+                        "</td><td class='medtd'>" + JSON.stringify(encounter) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
+            }else{tableContent += "<tr> <td class='medtd'> Encounter </td><td> 0 </td></tr>";}
+
+            if (immunizations.length) {
+                tableContent += "<tr> <td class='medtd'> Immunization </td><td>" + immunizations.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                immunizations.forEach((immunization) => {
+                    tableContent += "<tr><td class='medtd'>" + immunization.id +
+                        "</td><td class='medtd'>" + JSON.stringify(immunization) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
+            }else{tableContent += "<tr> <td class='medtd'> Immunization </td><td> 0 </td></tr>";}
+
+            if (carePlans.length) {
+                tableContent += "<tr> <td class='medtd'> Care Plan </td><td>" + carePlans.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                carePlans.forEach((carePlan) => {
+                    tableContent += "<tr><td class='medtd'>" + carePlan.id +
+                        "</td><td class='medtd'>" + JSON.stringify(carePlan) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
+            }else{tableContent += "<tr> <td class='medtd'> Care Plan </td><td> 0 </td></tr>";}
+
+            if (medRequests.length) {
+                tableContent += "<tr> <td class='medtd'> Medication Request </td><td>" + medRequests.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                medRequests.forEach((medRequest) => {
+                    tableContent += "<tr><td class='medtd'>" + medRequest.id +
+                        "</td><td class='medtd'>" + JSON.stringify(medRequest) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
+            }else{tableContent += "<tr> <td class='medtd'> Medication Request </td><td> 0 </td></tr>";}
+
+            if (conditions.length) {
+                tableContent += "<tr> <td class='medtd'> Condition </td><td>" + conditions.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                conditions.forEach((condition) => {
+                    tableContent += "<tr><td class='medtd'>" + condition.id +
+                        "</td><td class='medtd'>" + JSON.stringify(condition) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
+            }else{tableContent += "<tr> <td class='medtd'> Condition </td><td> 0 </td></tr>";}
 
             if (observations.length) {
                 tableContent += "<tr> <td class='medtd'> Observation </td><td>" + observations.length + "</td></tr>";
+                tableContent += "<tr><td colspan='2'><table><tbody>";
+                observations.forEach((observation) => {
+                    tableContent += "<tr><td class='medtd'>" + observation.id +
+                        "</td><td class='medtd'>" + JSON.stringify(observation) + "</td></tr>";
+                });
+                tableContent += "</tbody></table></td></tr>";
             }else{tableContent += "<tr> <td class='medtd'> Observation </td><td> 0 </td></tr>";}
-            if (diagnosticReports.length) {
-                tableContent += "<tr> <td class='medtd'> Diagnostic Report </td><td>" + diagnosticReports.length + "</td></tr>";
-             }else{tableContent += "<tr> <td class='medtd'> Diagnostic Report </td><td> 0 </td></tr>";}
-            if (encounters.length) {
-                tableContent += "<tr> <td class='medtd'> Encounter </td><td>" + encounters.length + "</td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Encounter </td><td> 0 </td></tr>";}
-            if (immunizations.length) {
-                tableContent += "<tr> <td class='medtd'> Immunization </td><td>" + immunizations.length + "</td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Immunization </td><td> 0 </td></tr>";}
-            if (carePlans.length) {
-                tableContent += "<tr> <td class='medtd'> Care Plan </td><td>" + carePlans.length + "</td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Care Plan </td><td> 0 </td></tr>";}
-            if (medRequests.length) {
-                tableContent += "<tr> <td class='medtd'> Medication Request </td><td>" + medRequests.length + "</td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Medication Request </td><td> 0 </td></tr>";}
-            if (conditions.length) {
-                tableContent += "<tr> <td class='medtd'> Condition </td><td>" + conditions.length + "</td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Condition </td><td> 0 </td></tr>";}
+
             tableContent += "</body></table></tr>";
 
             $('#spinner-image-review').hide();
@@ -184,11 +240,13 @@ if (!COL) {
         try {
             COL.client = client;
             if (COL.client.state.client.scope === 'patient/*.* openid profile launch'){
+                $('#icon-group').hide();
                 COL.displayReviewScreen();
                 COL.scope = 'patient';
                 $('#btn-configuration').hide();
                 COL.evaluateMeasurePatientContext();
             }else if(COL.client.state.client.scope === 'user/*.* openid profile launch'){
+                $('#icon-patient').hide();
                 COL.displayChoosePatientsScreen();
                 COL.scope = 'user';
                 COL.evaluateMeasureAllPatients();
