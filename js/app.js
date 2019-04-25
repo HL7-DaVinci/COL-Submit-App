@@ -111,8 +111,8 @@ if (!COL) {
             COL.client.api.fetchAll({ type: "Immunization", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "CarePlan", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "MedicationRequest", query: {patient: pid}}),
-            COL.client.api.fetchAll({ type: "Condition", query: {patient: pid}}),
-            COL.client.api.fetchAll({type: "Observation", query: {patient: pid}})
+            COL.client.api.fetchAll({ type: "Condition", query: {patient: pid}}) //,
+            // COL.client.api.fetchAll({type: "Observation", query: {patient: pid}})
         ]).then((res) => {
             let procedures = res[0],
                 diagnosticReports = res[1],
@@ -120,8 +120,8 @@ if (!COL) {
                 immunizations = res[3],
                 carePlans  = res[4],
                 medRequests = res[5],
-                conditions = res[6],
-                observations = res[7];
+                conditions = res[6];
+                // observations = res[7];
 
             if (procedures.length) {
                 tableContent += "<tr> <td class='medtd'> Procedure </td><td>" + procedures.length + "</td></tr>";
@@ -193,15 +193,15 @@ if (!COL) {
                 tableContent += "</tbody></table></td></tr>";
             }else{tableContent += "<tr> <td class='medtd'> Condition </td><td> 0 </td></tr>";}
 
-            if (observations.length) {
-                tableContent += "<tr> <td class='medtd'> Observation </td><td>" + observations.length + "</td></tr>";
-                tableContent += "<tr><td colspan='2'><table><tbody>";
-                observations.forEach((observation) => {
-                    tableContent += "<tr><td class='medtd'>" + observation.id +
-                        "</td><td class='medtd'>" + JSON.stringify(observation) + "</td></tr>";
-                });
-                tableContent += "</tbody></table></td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Observation </td><td> 0 </td></tr>";}
+            // if (observations.length) {
+            //     tableContent += "<tr> <td class='medtd'> Observation </td><td>" + observations.length + "</td></tr>";
+            //     tableContent += "<tr><td colspan='2'><table><tbody>";
+            //     observations.forEach((observation) => {
+            //         tableContent += "<tr><td class='medtd'>" + observation.id +
+            //             "</td><td class='medtd'>" + JSON.stringify(observation) + "</td></tr>";
+            //     });
+            //     tableContent += "</tbody></table></td></tr>";
+            // }else{tableContent += "<tr> <td class='medtd'> Observation </td><td> 0 </td></tr>";}
 
             tableContent += "</body></table></tr>";
 
@@ -219,7 +219,7 @@ if (!COL) {
         for(let i = 0; i < COL.entries.length; i++){
             $('#review-list').append(
                 "<tr> <td class='medtd'>" + COL.getPatientName(COL.entries[i].resource) +
-                "</td><td> <input type='checkbox' id=" + COL.entries[i].resource.id + " ></td></tr>");
+                "</td><td><input type='checkbox' id=" + COL.entries[i].resource.id + " ></td></tr>");
         }
     }
 
@@ -330,7 +330,7 @@ if (!COL) {
 
         promise.then(() => {
             COL.displayConfirmScreen();
-        }, () => COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration"));
+        }, () => COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration \n ou can close this window now."));
     }
 
     COL.evaluateMeasurePatientContext = () => {

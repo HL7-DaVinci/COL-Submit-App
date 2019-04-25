@@ -31,13 +31,13 @@ if (!COL) {
     }
 
     COL.payerEndpoints = [{
-        "name": "DaVinci COR Payer (Secure)",
+        "name": "DaVinci COL Payer (Secure)",
         "type": "secure-smart",
         "url": "https://api-v8-stu3.hspconsortium.org/DaVinciCOLPayer/data",
         "clientID": "4a71a430-0316-4e2a-8477-7671d7d3b862",
         "scope": "user/*.write" // offline_access
     },{
-        "name": "DaVinci COR Payer (Open)",
+        "name": "DaVinci COL Payer (Open)",
         "type": "open",
         "url": "https://api-v8-stu3.hspconsortium.org/DaVinciCOLPayer/open"
     }
