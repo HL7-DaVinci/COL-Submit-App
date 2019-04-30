@@ -236,17 +236,73 @@ if (!COL) {
         }
     };
 
+    COL.evaluateMeasurePatientContext = () => {
+        let promise;
+        let config = {
+            type: 'GET',
+            url: COL.providerEndpoint.url + COL.evaluateEndpoint + COL.evaluateEndpointPatient + COL.client.patient.id + "&" + COL.period()
+        };
+
+        COL.client.patient.read().then((pt) => {
+            COL.patient = pt;
+        });
+        promise = $.ajax(config);
+
+        promise.then((measureData) => {
+            if(measureData.contained[0].id){
+                console.log(measureData.contained[0].id);
+                COL.client.api.fetchAllWithReferences(
+                    {type: "Bundle",
+                     query: {
+                            "_id": measureData.contained[0].id
+                        }
+                    }
+                ).then(function (results) {
+                    console.log(results);
+                });
+            }
+            if(!measureData.entry){
+                COL.displayPatientInfo(COL.patient);
+            }else{
+                COL.displayErrorScreen("No data for patient", "No colorectal screening data found for this patient");
+            }
+        }, () => COL.displayErrorScreen("Evaluate measure failed", "Please check the evaluate endpoint configuration"));
+    }
+
+    COL.evaluateMeasureAllPatients = () => {
+        let promise;
+        let config = {
+            type: 'GET',
+            url: "http://measure.eval.kanvix.com/cqf-ruler/baseDstu3/Measure/measure-col/$evaluate-measure?periodStart=2018-4&periodEnd=2019-4&_format=json"
+        };
+
+        promise = $.ajax(config);
+
+        promise.then((measureData) => {
+            $('#spinner-image').hide();
+            $('#btn-continue').show();
+            if(measureData.contained[0].entry != ""){
+                COL.entries = measureData.contained[0].entry;
+                COL.displayListOfPatients();
+            }else{
+                COL.displayErrorScreen("No patients in risk", "No colorectal screening data are found in this period");
+            }
+        }, () => COL.displayErrorScreen("Evaluate measure failed", "Please check the evaluate endpoint configuration"));
+
+    }
+
     COL.loadData = (client) => {
         try {
             COL.client = client;
             if (COL.client.state.client.scope === 'patient/*.* openid profile launch'){
-                $('#icon-group').hide();
+
+                $('#icon-patient').append("<img src='images/Paper-plane-icon-patient.png' style='height:100px; width:150px'>");
                 COL.displayReviewScreen();
                 COL.scope = 'patient';
                 $('#btn-configuration').hide();
                 COL.evaluateMeasurePatientContext();
             }else if(COL.client.state.client.scope === 'user/*.* openid profile launch'){
-                $('#icon-patient').hide();
+                $('#icon-group').append("<img src='images/Paper-plane-icon-group.png' style='height:100px; width:150px'>");
                 COL.displayChoosePatientsScreen();
                 COL.scope = 'user';
                 COL.evaluateMeasureAllPatients();
@@ -257,7 +313,12 @@ if (!COL) {
         }
     };
 
-    COL.reconcile = () => {
+    COL.reconcile = async () => {
+        $('#discharge-selection').hide();
+        COL.disable('btn-submit');
+        COL.disable('btn-edit');
+        $('#btn-submit').html("<i class='fa fa-circle-o-notch fa-spin'></i> Submit measure report");
+
         if (COL.scope === 'user') {
             let checkboxes = $('#review-list input[type=checkbox]');
             let checkedPatients = [];
@@ -268,16 +329,37 @@ if (!COL) {
             }
             console.log(checkedPatients);
         } else {
-            let timestamp = COL.now();
+            console.log("submit");
+        }
 
-            $('#discharge-selection').hide();
-            COL.disable('btn-submit');
-            COL.disable('btn-edit');
-            $('#btn-submit').html("<i class='fa fa-circle-o-notch fa-spin'></i> Submit measure report");
+        if (COL.payerEndpoint.type === "secure-smart") {
+            sessionStorage.operationPayload = JSON.stringify(COL.operationPayload);
+            if (localStorage.tokenResponse) {
+                // load state from localStorage
+                let state = JSON.parse(localStorage.tokenResponse).state;
+                sessionStorage.tokenResponse = localStorage.tokenResponse;
+                sessionStorage[state] = localStorage[state];
+                FHIR.oauth2.ready(COL.initialize);
+            } else {
+                FHIR.oauth2.authorize({
+                    "client": {
+                        "client_id": COL.payerEndpoint.clientID,
+                        "scope":  COL.payerEndpoint.scope
+                    },
+                    "server": COL.payerEndpoint.url
+                });
+            }
+        } else {
+            COL.finalize();
         }
     };
 
     COL.initialize = (client) => {
+        if (COL.scope === 'patient'){
+            $('#icon-patient').append("<img src='images/Paper-plane-icon-patient.png' style='height:100px; width:150px'>");
+        }else if(COL.scope === 'user'){
+            $('#icon-group').append("<img src='images/Paper-plane-icon-group.png' style='height:100px; width:150px'>");
+        }
         COL.loadConfig();
         if (sessionStorage.operationPayload) {
             if (JSON.parse(sessionStorage.tokenResponse).refresh_token) {
@@ -295,7 +377,7 @@ if (!COL) {
     };
 
     COL.loadConfig = () => {
-        let configText = window.localStorage.getItem("cor-app-config");
+        let configText = window.localStorage.getItem("col-submit-app-config");
         if (configText) {
             let conf = JSON.parse (configText);
             if (conf['custom']) {
@@ -308,12 +390,8 @@ if (!COL) {
         }
     }
 
-
-
-    COL.finalize = () => {
-        let promise;
-
-        var config = {
+    COL.finalize = async () => {
+        let config = {
             type: 'POST',
             url: COL.payerEndpoint.url + COL.submitEndpoint,
             data: JSON.stringify(COL.operationPayload),
@@ -321,75 +399,19 @@ if (!COL) {
         };
 
         if (COL.payerEndpoint.type !== "open") {
-            config['beforeSend'] = function (xhr) {
+            config['beforeSend'] = (xhr) => {
                 xhr.setRequestHeader("Authorization", "Bearer " + COL.payerEndpoint.accessToken);
             };
         }
 
-        promise = $.ajax(config);
-
-        promise.then(() => {
+        try {
+            await $.ajax(config);
+            console.log (JSON.stringify(COL.operationPayload, null, 2));
             COL.displayConfirmScreen();
-        }, () => COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration \n ou can close this window now."));
-    }
-
-    COL.evaluateMeasurePatientContext = () => {
-        let promise;
-        let config = {
-            type: 'GET',
-            //TODO make the date dynamic
-            url: COL.providerEndpoint.url + COL.evaluateEndpoint + COL.evaluateEndpointPatient + COL.client.patient.id + "&" + COL.period()
-                //+ "&periodStart=2017-01&periodEnd=2018-12"
-        };
-
-        // $.get()
-        if (COL.payerEndpoint.type !== "open") {
-            config['beforeSend'] = function (xhr) {
-                xhr.setRequestHeader ("Authorization", "Bearer " + COL.payerEndpoint.accessToken);
-            };
+        } catch (err) {
+            COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration <br/> You can close this window now.");
         }
-        COL.client.patient.read().then((pt) => {
-            COL.patient = pt;
-        });
-        promise = $.ajax(config);
-
-        promise.then((measureData) => {
-            if(!measureData.entry){
-                COL.displayPatientInfo(COL.patient);
-            }else{
-                COL.displayErrorScreen("No data for patient", "No colorectal screening data found for this patient");
-            }
-        }, () => COL.displayErrorScreen("Evaluate measure failed", "Please check the evaluate endpoint configuration"));
     }
-
-    COL.evaluateMeasureAllPatients = () => {
-        let promise;
-        let config = {
-            type: 'GET',
-            url: "http://measure.eval.kanvix.com/cqf-ruler/baseDstu3/Measure/measure-col/$evaluate-measure?periodStart=2018-4&periodEnd=2019-4&_format=json"
-        };
-
-        if (COL.payerEndpoint.type !== "open") {
-            config['beforeSend'] = function (xhr) {
-                xhr.setRequestHeader ("Authorization", "Bearer " + COL.payerEndpoint.accessToken);
-            };
-        }
-
-        promise = $.ajax(config);
-
-        promise.then((measureData) => {
-            $('#spinner-image').hide();
-            $('#btn-continue').show();
-            if(measureData.contained[0].entry != ""){
-                COL.entries = measureData.contained[0].entry;
-                COL.displayListOfPatients();
-            }else{
-                COL.displayErrorScreen("No patients in risk", "No colorectal screening data are found in this period");
-            }
-        }, () => COL.displayErrorScreen("Evaluate measure failed", "Please check the evaluate endpoint configuration"));
-
-    }
-
 
     $('#btn-continue').click(COL.displayReviewScreen);
     $('#btn-submit').click(COL.reconcile);
@@ -397,19 +419,21 @@ if (!COL) {
     $('#btn-config').click(function () {
         let selection = $('#config-select').val();
         if (selection !== 'custom') {
-            window.localStorage.setItem("cor-app-config", JSON.stringify({'selection': parseInt(selection)}));
+            window.localStorage.setItem("col-submit-app-config", JSON.stringify({'selection': parseInt(selection)}));
         } else {
             let configtext = $('#config-text').val();
             let myconf;
             try {
                 myconf = JSON.parse(configtext);
-                window.localStorage.setItem("cor-app-config", JSON.stringify({'custom': myconf}));
+                window.localStorage.setItem("col-submit-app-config", JSON.stringify({'custom': myconf}));
             } catch (err) {
                 alert ("Unable to parse configuration. Please try again.");
             }
         }
         COL.loadConfig();
         COL.displayReviewScreen();
+        $('#btn-configuration').show();
+        $("#btn-submit").show();
     });
 
     COL.payerEndpoints.forEach((e, id) => {

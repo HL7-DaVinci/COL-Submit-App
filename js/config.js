@@ -18,7 +18,7 @@ if (!COL) {
 
     COL.reportPeriod = 12;
 
-    COL.submitEndpoint = "/Measure/measure-mrp/$submit-data";
+    COL.submitEndpoint = "/Measure/measure-col/$submit-data";
 
     COL.evaluateEndpoint = "/Measure/measure-col/$evaluate-measure?";
 
@@ -34,8 +34,8 @@ if (!COL) {
         "name": "DaVinci COL Payer (Secure)",
         "type": "secure-smart",
         "url": "https://api-v8-stu3.hspconsortium.org/DaVinciCOLPayer/data",
-        "clientID": "4a71a430-0316-4e2a-8477-7671d7d3b862",
-        "scope": "user/*.write" // offline_access
+        "clientID": "1a1a7abc-f0ac-48fc-902f-5830a6f2f07b",
+        "scope": "user/*.write openid profile"
     },{
         "name": "DaVinci COL Payer (Open)",
         "type": "open",
@@ -44,7 +44,7 @@ if (!COL) {
     ];
 
     // default configuration
-    COL.configSetting = 1; // DaVinci COR Payer  (Open)
+    COL.configSetting = 1; // DaVinci COL Payer  (Open)
     COL.payerEndpoint = COL.payerEndpoints[COL.configSetting];
 
     COL.operationPayload = {
