@@ -16,6 +16,17 @@ if (!COL) {
         }
     };
 
+    COL.scenarioDescription = {
+        "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit,\n" +
+            "            sed do eiusmod tempor incididunt ut labore et dolore magna\n" +
+            "            aliqua. Ut enim ad minim veniam, quis nostrud exercitation\n" +
+            "            ullamco laboris nisi ut aliquip ex ea commodo consequat.\n" +
+            "            Duis aute irure dolor in reprehenderit in voluptate velit\n" +
+            "            esse cillum dolore eu fugiat nulla pariatur. Excepteur sint\n" +
+            "            occaecat cupidatat non proident, sunt in culpa qui officia\n" +
+            "            deserunt mollit anim id est laborum."
+    };
+
     COL.reportPeriod = 12;
 
     COL.submitEndpoint = "/Measure/measure-col/$submit-data";

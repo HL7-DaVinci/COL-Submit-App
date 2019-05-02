@@ -259,28 +259,29 @@ if (!COL) {
 
         COL.client.patient.read().then((pt) => {
             COL.patient = pt;
-        });
-        promise = $.ajax(config);
 
-        promise.then((measureData) => {
-            if(measureData.contained[0].id){
-                console.log(measureData.contained[0].id);
-                COL.client.api.fetchAllWithReferences(
-                    {type: "Bundle",
-                     query: {
-                            "_id": measureData.contained[0].id
+            promise = $.ajax(config);
+
+            promise.then((measureData) => {
+                if(measureData.contained[0].id){
+                    console.log(measureData.contained[0].id);
+                    COL.client.api.fetchAllWithReferences(
+                        {type: "Bundle",
+                         query: {
+                                "_id": measureData.contained[0].id
+                            }
                         }
-                    }
-                ).then(function (results) {
-                    console.log(results);
-                });
-            }
-            if(!measureData.entry){
-                COL.displayPatientInfo(COL.patient);
-            }else{
-                COL.displayErrorScreen("No data for patient", "No colorectal screening data found for this patient");
-            }
-        }, () => COL.displayErrorScreen("Evaluate measure failed", "Please check the evaluate endpoint configuration"));
+                    ).then(function (results) {
+                        console.log(results);
+                    });
+                }
+                if(!measureData.entry){
+                    COL.displayPatientInfo(pt);
+                }else{
+                    COL.displayErrorScreen("No data for patient", "No colorectal screening data found for this patient");
+                }
+            }, () => COL.displayErrorScreen("Evaluate measure failed", "Please check the evaluate endpoint configuration"));
+        });
     }
 
     COL.evaluateMeasureAllPatients = () => {
