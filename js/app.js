@@ -73,7 +73,7 @@ if (!COL) {
     };
 
     COL.displayReviewScreen = () => {
-        // $("#final-list").empty();
+        $("#final-list").empty();
         COL.displayScreen('review-screen');
         $('#btn-configuration').hide();
         $("#btn-submit").hide();
@@ -85,10 +85,24 @@ if (!COL) {
                     checkedPatients.push(checkboxes[i].id);
                 }
             }
-
+            COL.measureReports = [];
             COL.entries.forEach((patient) => {
                 if(checkedPatients.includes(patient.resource.id)) {
                     COL.displayPatientInfo(patient.resource);
+                    let promise;
+                    let config = {
+                        type: 'GET',
+                        url: COL.providerEndpoint.url + COL.collectEndpoint + COL.period() + "&subject=Patient/" + COL.client.patient.id
+                    };
+
+                    COL.client.patient.read().then((pt) => {
+                        COL.patient = pt;
+                    });
+                    promise = $.ajax(config);
+
+                    promise.then((measureReport) => {
+                        COL.measureReports.push(measureReport);
+                    });
                 }
             });
         }
@@ -281,6 +295,7 @@ if (!COL) {
         promise.then((measureData) => {
             $('#spinner-image').hide();
             $('#btn-continue').show();
+            COL.measure = measureData;
             if(measureData.contained[0].entry != ""){
                 COL.entries = measureData.contained[0].entry;
                 COL.displayListOfPatients();

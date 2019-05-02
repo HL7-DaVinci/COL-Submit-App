@@ -22,6 +22,8 @@ if (!COL) {
 
     COL.evaluateEndpoint = "/Measure/measure-col/$evaluate-measure?";
 
+    COL.collectEndpoint = "/Measure/measure-col/$collect-data?";
+
     COL.evaluateEndpointPatient = "patient=";
 
     COL.providerEndpoint = {
@@ -210,11 +212,4 @@ if (!COL) {
             }
         ]
     };
-
-    COL.postDischargeReconciliationCoding = {
-        "system": "http://snomed.info/sct",
-        "code": "430193006",
-        "display": "Generic Medication Reconciliation"
-    };
-
 }());
