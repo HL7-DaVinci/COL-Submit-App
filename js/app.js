@@ -73,7 +73,7 @@ if (!COL) {
     };
 
     COL.displayReviewScreen = () => {
-        $("#final-list").empty();
+        // $("#final-list").empty();
         COL.displayScreen('review-screen');
         $('#btn-configuration').hide();
         $("#btn-submit").hide();
