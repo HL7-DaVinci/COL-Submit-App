@@ -92,12 +92,12 @@ if (!COL) {
                     let promise;
                     let config = {
                         type: 'GET',
-                        url: COL.providerEndpoint.url + COL.collectEndpoint + COL.period() + "&subject=Patient/" + COL.client.patient.id
+                        url: COL.providerEndpoint.url + COL.collectEndpoint + COL.period() + "&patient=Patient/" + patient.resource.id
                     };
 
-                    COL.client.patient.read().then((pt) => {
-                        COL.patient = pt;
-                    });
+                    // COL.client.patient.read().then((pt) => {
+                    //     COL.patient = pt;
+                    // });
                     promise = $.ajax(config);
 
                     promise.then((measureReport) => {
@@ -106,6 +106,22 @@ if (!COL) {
                 }
             });
         }
+        // else if(COL.scope === 'patient'){
+        //     let promise;
+        //     let config = {
+        //         type: 'GET',
+        //         url: COL.providerEndpoint.url + COL.collectEndpoint + COL.period() + "&patient=Patient/" + patient.resource.id
+        //     };
+        //
+        //     // COL.client.patient.read().then((pt) => {
+        //     //     COL.patient = pt;
+        //     // });
+        //     promise = $.ajax(config);
+        //
+        //     promise.then((measureReport) => {
+        //         COL.measureReports.push(measureReport);
+        //     });
+        // }
 
     }
 
@@ -121,20 +137,22 @@ if (!COL) {
         Promise.all([
             COL.client.api.fetchAll({type: "Procedure", query: {patient: pid}}),
             COL.client.api.fetchAll({type: "DiagnosticReport", query: { patient: pid}}),
-            COL.client.api.fetchAll({ type: "Encounter", query: {patient: pid}}),
+
             COL.client.api.fetchAll({ type: "Immunization", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "CarePlan", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "MedicationRequest", query: {patient: pid}}),
             COL.client.api.fetchAll({ type: "Condition", query: {patient: pid}}) //,
+            //     COL.client.api.fetchAll({ type: "Encounter", query: {patient: pid}}),
             // COL.client.api.fetchAll({type: "Observation", query: {patient: pid}})
         ]).then((res) => {
             let procedures = res[0],
                 diagnosticReports = res[1],
-                encounters = res[2],
-                immunizations = res[3],
-                carePlans  = res[4],
-                medRequests = res[5],
-                conditions = res[6];
+
+                immunizations = res[2],
+                carePlans  = res[3],
+                medRequests = res[4],
+                conditions = res[5];
+            //  encounters = res[6],
                 // observations = res[7];
 
             if (procedures.length) {
@@ -157,15 +175,15 @@ if (!COL) {
                 tableContent += "</tbody></table></td></tr>";
              }else{tableContent += "<tr> <td class='medtd'> Diagnostic Report </td><td> 0 </td></tr>";}
 
-            if (encounters.length) {
-                tableContent += "<tr> <td class='medtd'> Encounter </td><td>" + encounters.length + "</td></tr>";
-                tableContent += "<tr><td colspan='2'><table><tbody>";
-                encounters.forEach((encounter) => {
-                    tableContent += "<tr><td class='medtd'>" + encounter.id +
-                        "</td><td class='medtd'>" + JSON.stringify(encounter) + "</td></tr>";
-                });
-                tableContent += "</tbody></table></td></tr>";
-            }else{tableContent += "<tr> <td class='medtd'> Encounter </td><td> 0 </td></tr>";}
+            // if (encounters.length) {
+            //     tableContent += "<tr> <td class='medtd'> Encounter </td><td>" + encounters.length + "</td></tr>";
+            //     tableContent += "<tr><td colspan='2'><table><tbody>";
+            //     encounters.forEach((encounter) => {
+            //         tableContent += "<tr><td class='medtd'>" + encounter.id +
+            //             "</td><td class='medtd'>" + JSON.stringify(encounter) + "</td></tr>";
+            //     });
+            //     tableContent += "</tbody></table></td></tr>";
+            // }else{tableContent += "<tr> <td class='medtd'> Encounter </td><td> 0 </td></tr>";}
 
             if (immunizations.length) {
                 tableContent += "<tr> <td class='medtd'> Immunization </td><td>" + immunizations.length + "</td></tr>";
@@ -276,6 +294,7 @@ if (!COL) {
                     });
                 }
                 if(!measureData.entry){
+                    COL.evalMeasureResult = measureData;
                     COL.displayPatientInfo(pt);
                 }else{
                     COL.displayErrorScreen("No data for patient", "No colorectal screening data found for this patient");
@@ -288,7 +307,7 @@ if (!COL) {
         let promise;
         let config = {
             type: 'GET',
-            url: "http://measure.eval.kanvix.com/cqf-ruler/baseDstu3/Measure/measure-col/$evaluate-measure?periodStart=2018-4&periodEnd=2019-4&_format=json"
+            url: COL.providerEndpoint.url + COL.evaluateEndpoint + COL.period()
         };
 
         promise = $.ajax(config);
@@ -407,26 +426,52 @@ if (!COL) {
     }
 
     COL.finalize = async () => {
-        let config = {
-            type: 'POST',
-            url: COL.payerEndpoint.url + COL.submitEndpoint,
-            data: JSON.stringify(COL.operationPayload),
-            contentType: "application/fhir+json"
+        let promise;
+        let configCollect = {
+            type: 'GET',
+            url: COL.providerEndpoint.url + COL.collectDataEndpoint + COL.period() + "&patient=Patient/" + COL.patient.id
         };
 
-        if (COL.payerEndpoint.type !== "open") {
-            config['beforeSend'] = (xhr) => {
-                xhr.setRequestHeader("Authorization", "Bearer " + COL.payerEndpoint.accessToken);
+        if (COL.providerEndpoint.type !== "open") {
+            configCollect['beforeSend'] = function (xhr) {
+                xhr.setRequestHeader ("Authorization", "Bearer " + COL.providerEndpoint.accessToken);
             };
         }
 
-        try {
-            await $.ajax(config);
-            console.log (JSON.stringify(COL.operationPayload, null, 2));
-            COL.displayConfirmScreen();
-        } catch (err) {
-            COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration <br/> You can close this window now.");
-        }
+        promise = $.ajax(configCollect);
+
+        promise.then((measure) => {
+
+            let config = {
+                type: 'POST',
+                url: COL.payerEndpoint.url + COL.submitEndpoint,
+                data: JSON.stringify(measure),
+                contentType: "application/fhir+json"
+            };
+
+            if (COL.payerEndpoint.type !== "open") {
+                config['beforeSend'] = (xhr) => {
+                    xhr.setRequestHeader("Authorization", "Bearer " + COL.payerEndpoint.accessToken);
+                };
+            }
+
+            promise = $.ajax(config);
+            console.log(JSON.stringify(measure, null, 2));
+            promise.then(() => {
+                COL.displayConfirmScreen();
+            }, () => COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration <br/> You can close this window now."));
+
+        });
+
+            // try {
+        //     await $.ajax(config);
+        //     console.log (JSON.stringify(COL.evalMeasureResult, null, 2));
+        //     COL.displayConfirmScreen();
+        // } catch (err) {
+        //     COL.displayErrorScreen("Measure report submission failed", "Please check the submit endpoint configuration <br/> You can close this window now.");
+        // }
+        // }, () => COL.displayErrorScreen("Collect data failed", "Please check the collect data endpoint configuration </br> You can close this window now."));
+
     }
 
     $('#btn-continue').click(COL.displayReviewScreen);
