@@ -42,19 +42,19 @@ if (!COL) {
     COL.providerEndpoint = {
         "name": "DaVinci COL Provider",
         "type": "open",
-        "url": "https://api-v8-stu3.hspconsortium.org/DaVinciCOLProvider/open"
+        "url": "https://api.logicahealth.org/DaVinciCOLProvider/open"
     }
 
     COL.payerEndpoints = [{
         "name": "DaVinci COL Payer (Secure)",
         "type": "secure-smart",
-        "url": "https://api-v8-stu3.hspconsortium.org/DaVinciCOLPayer/data",
+        "url": "https://api.logicahealth.org/DaVinciCOLPayer/data",
         "clientID": "1a1a7abc-f0ac-48fc-902f-5830a6f2f07b",
         "scope": "user/*.write openid profile"
     },{
         "name": "DaVinci COL Payer (Open)",
         "type": "open",
-        "url": "https://api-v8-stu3.hspconsortium.org/DaVinciCOLPayer/open"
+        "url": "https://api.logicahealth.org/DaVinciCOLPayer/open"
     }
     ];
 
