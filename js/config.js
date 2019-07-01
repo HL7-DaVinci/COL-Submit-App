@@ -49,8 +49,8 @@ if (!COL) {
         "name": "DaVinci COL Payer (Secure)",
         "type": "secure-smart",
         "url": "https://api.logicahealth.org/DaVinciCOLPayer/data",
-        "clientID": "1a1a7abc-f0ac-48fc-902f-5830a6f2f07b",
-        "scope": "user/*.write openid profile"
+        "clientID": "75ae2967-e7d9-4bec-b0bc-5e7936f0ff57",
+        "scope": "user/*.write"
     },{
         "name": "DaVinci COL Payer (Open)",
         "type": "open",
