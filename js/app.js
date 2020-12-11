@@ -92,7 +92,7 @@ if (!COL) {
                     let promise;
                     let config = {
                         type: 'GET',
-                        url: COL.providerEndpoint.url + COL.collectEndpoint + COL.period() + "&patient=Patient/" + patient.resource.id
+                        url: COL.providerEndpoint.url + COL.collectEndpoint.replace("MEASUREID", COL.providerEndpoint.measureID) + COL.period() + "&patient=Patient/" + patient.resource.id
                     };
 
                     // COL.client.patient.read().then((pt) => {
@@ -110,7 +110,7 @@ if (!COL) {
         //     let promise;
         //     let config = {
         //         type: 'GET',
-        //         url: COL.providerEndpoint.url + COL.collectEndpoint + COL.period() + "&patient=Patient/" + patient.resource.id
+        //         url: COL.providerEndpoint.url + COL.collectEndpoint.replace("MEASUREID", COL.providerEndpoint.measureID) + COL.period() + "&patient=Patient/" + patient.resource.id
         //     };
         //
         //     // COL.client.patient.read().then((pt) => {
@@ -272,7 +272,7 @@ if (!COL) {
         let promise;
         let config = {
             type: 'GET',
-            url: COL.providerEndpoint.url + COL.evaluateEndpoint + COL.evaluateEndpointPatient + COL.client.patient.id + "&" + COL.period()
+            url: COL.providerEndpoint.url + COL.evaluateEndpoint.replace("MEASUREID", COL.providerEndpoint.measureID) + COL.evaluateEndpointPatient + COL.client.patient.id + "&" + COL.period()
         };
 
         COL.client.patient.read().then((pt) => {
@@ -307,7 +307,7 @@ if (!COL) {
         let promise;
         let config = {
             type: 'GET',
-            url: COL.providerEndpoint.url + COL.evaluateEndpoint + COL.period()
+            url: COL.providerEndpoint.url + COL.evaluateEndpoint.replace("MEASUREID", COL.providerEndpoint.measureID) + COL.period()
         };
 
         promise = $.ajax(config);
@@ -329,14 +329,14 @@ if (!COL) {
     COL.loadData = (client) => {
         try {
             COL.client = client;
-            if (COL.client.state.client.scope === 'patient/*.* openid profile launch'){
+            if (COL.client.state.client.scope.includes('patient')){
 
                 $('#icon-patient').append("<img src='images/Paper-plane-icon-patient.png' style='height:100px; width:150px'>");
                 COL.displayReviewScreen();
                 COL.scope = 'patient';
                 $('#btn-configuration').hide();
                 COL.evaluateMeasurePatientContext();
-            }else if(COL.client.state.client.scope === 'user/*.* openid profile launch'){
+            }else if(COL.client.state.client.scope.includes('user')){
                 $('#icon-group').append("<img src='images/Paper-plane-icon-group.png' style='height:100px; width:150px'>");
                 COL.displayChoosePatientsScreen();
                 COL.scope = 'user';
@@ -429,7 +429,7 @@ if (!COL) {
         let promise;
         let configCollect = {
             type: 'GET',
-            url: COL.providerEndpoint.url + COL.collectDataEndpoint + COL.period() + "&patient=Patient/" + COL.patient.id
+            url: COL.providerEndpoint.url + COL.collectDataEndpoint.replace("MEASUREID", COL.providerEndpoint.measureID) + COL.period() + "&patient=Patient/" + COL.patient.id
         };
 
         if (COL.providerEndpoint.type !== "open") {
@@ -444,7 +444,7 @@ if (!COL) {
 
             let config = {
                 type: 'POST',
-                url: COL.payerEndpoint.url + COL.submitEndpoint,
+                url: COL.payerEndpoint.url + COL.submitEndpoint.replace("MEASUREID", COL.payerEndpoint.measureID),
                 data: JSON.stringify(measure),
                 contentType: "application/fhir+json"
             };

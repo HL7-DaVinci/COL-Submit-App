@@ -16,7 +16,7 @@ if (!COL) {
         }
     };
 
-    COL.collectDataEndpoint = "/Measure/measure-col/$collect-data?";
+    COL.collectDataEndpoint = "/Measure/MEASUREID/$collect-data?";
 
     COL.scenarioDescription = {
         "description" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit,\n" +
@@ -31,35 +31,43 @@ if (!COL) {
 
     COL.reportPeriod = 12;
 
-    COL.submitEndpoint = "/Measure/measure-col/$submit-data";
+    COL.submitEndpoint = "/Measure/MEASUREID/$submit-data";
 
-    COL.evaluateEndpoint = "/Measure/measure-col/$evaluate-measure?";
+    COL.evaluateEndpoint = "/Measure/MEASUREID/$evaluate-measure?";
 
-    COL.collectEndpoint = "/Measure/measure-col/$collect-data?";
+    COL.collectEndpoint = "/Measure/MEASUREID/$collect-data?";
 
     COL.evaluateEndpointPatient = "patient=";
 
     COL.providerEndpoint = {
         "name": "DaVinci COL Provider",
         "type": "open",
-        "url": "https://api.logicahealth.org/DaVinciCOLProvider/open"
+        "url": "https://gic-sandbox.alphora.com/cqf-ruler-r4/fhir",
+        "measureID": "measure-EXM130-7.3.000"
     }
 
     COL.payerEndpoints = [{
+        "name": "Alphora Payer (Open)",
+        "type": "open",
+        "url": "https://gic-sandbox.alphora.com/cqf-ruler-r4/fhir",
+        "measureID": "measure-EXM130-7.3.000"
+    },{
         "name": "DaVinci COL Payer (Secure)",
         "type": "secure-smart",
         "url": "https://api.logicahealth.org/DaVinciCOLPayer/data",
+        "measureID": "measure-col",
         "clientID": "75ae2967-e7d9-4bec-b0bc-5e7936f0ff57",
         "scope": "user/*.write"
     },{
         "name": "DaVinci COL Payer (Open)",
         "type": "open",
-        "url": "https://api.logicahealth.org/DaVinciCOLPayer/open"
+        "url": "https://api.logicahealth.org/DaVinciCOLPayer/open",
+        "measureID": "measure-col"
     }
     ];
 
     // default configuration
-    COL.configSetting = 1; // DaVinci COL Payer  (Open)
+    COL.configSetting = 0; // Alphora Payer (Open)
     COL.payerEndpoint = COL.payerEndpoints[COL.configSetting];
 
     COL.operationPayload = {
